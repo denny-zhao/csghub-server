@@ -2,7 +2,11 @@ package handler
 
 import (
 	"net/http"
+	"os"
+	"path/filepath"
+	"runtime"
 	"testing"
+	"unicode"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/mock"
@@ -283,6 +287,23 @@ func TestMemoryHandler_ErrorMapping(t *testing.T) {
 
 	tester.Execute()
 	tester.ResponseEqCode(t, http.StatusServiceUnavailable)
+}
+
+func TestMemoryHandler_NoBidiControlCharacters(t *testing.T) {
+	_, currentFile, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Fatal("failed to resolve test file path")
+	}
+	targetPath := filepath.Join(filepath.Dir(currentFile), "memory.go")
+	data, err := os.ReadFile(targetPath)
+	if err != nil {
+		t.Fatalf("failed to read %s: %v", targetPath, err)
+	}
+	for i, r := range string(data) {
+		if unicode.Is(unicode.Bidi_Control, r) {
+			t.Fatalf("bidi control character found at index %d in %s", i, targetPath)
+		}
+	}
 }
 
 func floatPtr(v float64) *float64 {

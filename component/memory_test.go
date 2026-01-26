@@ -111,3 +111,105 @@ func TestMemoryComponent_Capabilities(t *testing.T) {
 	assert.True(t, caps.SupportsList)
 	assert.False(t, caps.SupportsMetrics)
 }
+
+func TestMemoryComponent_GetProject(t *testing.T) {
+	client := &mockMemoryAdapter{}
+	component := newMemoryComponent(client)
+
+	req := &types.GetMemoryProjectRequest{OrgID: "org", ProjectID: "proj"}
+	resp := &types.MemoryProjectResponse{OrgID: "org", ProjectID: "proj"}
+	client.On("GetProject", mock.Anything, req).Return(resp, nil)
+
+	got, err := component.GetProject(context.Background(), req)
+	assert.NoError(t, err)
+	assert.Equal(t, resp, got)
+}
+
+func TestMemoryComponent_ListProjects(t *testing.T) {
+	client := &mockMemoryAdapter{}
+	component := newMemoryComponent(client)
+
+	resp := []*types.MemoryProjectRef{{OrgID: "org", ProjectID: "proj"}}
+	client.On("ListProjects", mock.Anything).Return(resp, nil)
+
+	got, err := component.ListProjects(context.Background())
+	assert.NoError(t, err)
+	assert.Equal(t, resp, got)
+}
+
+func TestMemoryComponent_DeleteProject(t *testing.T) {
+	client := &mockMemoryAdapter{}
+	component := newMemoryComponent(client)
+
+	req := &types.DeleteMemoryProjectRequest{OrgID: "org", ProjectID: "proj"}
+	client.On("DeleteProject", mock.Anything, req).Return(nil)
+
+	err := component.DeleteProject(context.Background(), req)
+	assert.NoError(t, err)
+}
+
+func TestMemoryComponent_AddMemories(t *testing.T) {
+	client := &mockMemoryAdapter{}
+	component := newMemoryComponent(client)
+
+	req := &types.AddMemoriesRequest{
+		OrgID:     "org",
+		ProjectID: "proj",
+		Messages:  []types.MemoryMessage{{Content: "hello"}},
+	}
+	resp := &types.AddMemoriesResponse{Created: []types.MemoryMessage{{UID: "e_1", Content: "hello"}}}
+	client.On("AddMemories", mock.Anything, req).Return(resp, nil)
+
+	got, err := component.AddMemories(context.Background(), req)
+	assert.NoError(t, err)
+	assert.Equal(t, resp, got)
+}
+
+func TestMemoryComponent_SearchMemories(t *testing.T) {
+	client := &mockMemoryAdapter{}
+	component := newMemoryComponent(client)
+
+	req := &types.SearchMemoriesRequest{ContentQuery: "query"}
+	resp := &types.SearchMemoriesResponse{Status: 0, Content: []types.MemoryMessage{{UID: "e_1"}}}
+	client.On("SearchMemories", mock.Anything, req).Return(resp, nil)
+
+	got, err := component.SearchMemories(context.Background(), req)
+	assert.NoError(t, err)
+	assert.Equal(t, resp, got)
+}
+
+func TestMemoryComponent_ListMemories(t *testing.T) {
+	client := &mockMemoryAdapter{}
+	component := newMemoryComponent(client)
+
+	req := &types.ListMemoriesRequest{OrgID: "org", ProjectID: "proj"}
+	resp := &types.ListMemoriesResponse{Status: 0, Content: []types.MemoryMessage{{UID: "e_1"}}}
+	client.On("ListMemories", mock.Anything, req).Return(resp, nil)
+
+	got, err := component.ListMemories(context.Background(), req)
+	assert.NoError(t, err)
+	assert.Equal(t, resp, got)
+}
+
+func TestMemoryComponent_DeleteMemories(t *testing.T) {
+	client := &mockMemoryAdapter{}
+	component := newMemoryComponent(client)
+
+	req := &types.DeleteMemoriesRequest{OrgID: "org", ProjectID: "proj", UID: "e_1"}
+	client.On("DeleteMemories", mock.Anything, req).Return(nil)
+
+	err := component.DeleteMemories(context.Background(), req)
+	assert.NoError(t, err)
+}
+
+func TestMemoryComponent_Health(t *testing.T) {
+	client := &mockMemoryAdapter{}
+	component := newMemoryComponent(client)
+
+	resp := &types.MemoryHealthResponse{Status: "healthy", Service: "memmachine"}
+	client.On("Health", mock.Anything).Return(resp, nil)
+
+	got, err := component.Health(context.Background())
+	assert.NoError(t, err)
+	assert.Equal(t, resp, got)
+}

@@ -506,6 +506,13 @@ func NewRouter(config *config.Config, enableSwagger bool) (*gin.Engine, error) {
 	}
 	createPromptRoutes(apiGroup, middlewareCollection, promptHandler, repoCommonHandler)
 
+	// memory service
+	memoryHandler, err := handler.NewMemoryHandler(config)
+	if err != nil {
+		return nil, fmt.Errorf("error creating memory handler,%w", err)
+	}
+	createMemoryRoutes(apiGroup, middlewareCollection, memoryHandler)
+
 	// dataflow proxy
 	dataflowHandler, err := handler.NewDataflowProxyHandler(config)
 	if err != nil {
@@ -1225,6 +1232,22 @@ func createDataflowRoutes(apiGroup *gin.RouterGroup, dataflowHandler *handler.Da
 	dataflowGrp := apiGroup.Group("/dataflow")
 	dataflowGrp.Use(middleware.MustLogin())
 	dataflowGrp.Any("/*any", dataflowHandler.Proxy)
+}
+
+func createMemoryRoutes(apiGroup *gin.RouterGroup, middlewareCollection middleware.MiddlewareCollection, memoryHandler *handler.MemoryHandler) {
+	memoryGroup := apiGroup.Group("/memory")
+	memoryGroup.Use(middlewareCollection.Auth.NeedLogin)
+	{
+		memoryGroup.POST("/projects", memoryHandler.CreateProject)
+		memoryGroup.POST("/projects/get", memoryHandler.GetProject)
+		memoryGroup.POST("/projects/list", memoryHandler.ListProjects)
+		memoryGroup.POST("/projects/delete", memoryHandler.DeleteProject)
+		memoryGroup.POST("/memories", memoryHandler.AddMemories)
+		memoryGroup.POST("/memories/search", memoryHandler.SearchMemories)
+		memoryGroup.POST("/memories/list", memoryHandler.ListMemories)
+		memoryGroup.POST("/memories/delete", memoryHandler.DeleteMemories)
+		memoryGroup.GET("/health", memoryHandler.Health)
+	}
 }
 
 func createCSGBotRoutes(apiGroup *gin.RouterGroup, csgbotHandler *handler.CSGBotProxyHandler) {

@@ -31,6 +31,7 @@ import (
 	"opencsg.com/csghub-server/common/config"
 	"opencsg.com/csghub-server/common/i18n"
 	"opencsg.com/csghub-server/common/types"
+	"opencsg.com/csghub-server/component"
 )
 
 func RunServer(config *config.Config, enableSwagger bool) {
@@ -507,10 +508,11 @@ func NewRouter(config *config.Config, enableSwagger bool) (*gin.Engine, error) {
 	createPromptRoutes(apiGroup, middlewareCollection, promptHandler, repoCommonHandler)
 
 	// memory service
-	memoryHandler, err := handler.NewMemoryHandler(config)
+	memoryComp, err := component.NewMemoryComponent(config)
 	if err != nil {
-		return nil, fmt.Errorf("error creating memory handler,%w", err)
+		return nil, fmt.Errorf("error creating memory component,%w", err)
 	}
+	memoryHandler := handler.NewMemoryHandler(memoryComp)
 	createMemoryRoutes(apiGroup, middlewareCollection, memoryHandler)
 
 	// dataflow proxy

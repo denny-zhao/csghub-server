@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	mockcomponent "opencsg.com/csghub-server/_mocks/opencsg.com/csghub-server/component"
 	"opencsg.com/csghub-server/builder/testutil"
+	"opencsg.com/csghub-server/common/errorx"
 	"opencsg.com/csghub-server/common/types"
 )
 
@@ -50,6 +51,18 @@ func TestMemoryHandler_CreateProject(t *testing.T) {
 	})
 }
 
+func TestMemoryHandler_CreateProject_Validation(t *testing.T) {
+	tester := NewMemoryTester(t).WithHandleFunc(func(h *MemoryHandler) gin.HandlerFunc {
+		return h.CreateProject
+	})
+
+	req := types.CreateMemoryProjectRequest{OrgID: "", ProjectID: "proj"}
+	tester.WithBody(t, req)
+
+	tester.Execute()
+	tester.ResponseEqCode(t, http.StatusBadRequest)
+}
+
 func TestMemoryHandler_GetProject(t *testing.T) {
 	tester := NewMemoryTester(t).WithHandleFunc(func(h *MemoryHandler) gin.HandlerFunc {
 		return h.GetProject
@@ -67,6 +80,18 @@ func TestMemoryHandler_GetProject(t *testing.T) {
 		ProjectID:   "proj",
 		Description: "desc",
 	})
+}
+
+func TestMemoryHandler_GetProject_Validation(t *testing.T) {
+	tester := NewMemoryTester(t).WithHandleFunc(func(h *MemoryHandler) gin.HandlerFunc {
+		return h.GetProject
+	})
+
+	req := types.GetMemoryProjectRequest{OrgID: "org", ProjectID: ""}
+	tester.WithBody(t, req)
+
+	tester.Execute()
+	tester.ResponseEqCode(t, http.StatusBadRequest)
 }
 
 func TestMemoryHandler_ListProjects(t *testing.T) {
@@ -118,6 +143,20 @@ func TestMemoryHandler_AddMemories(t *testing.T) {
 	tester.ResponseEq(t, http.StatusOK, tester.OKText, resp)
 }
 
+func TestMemoryHandler_AddMemories_Validation(t *testing.T) {
+	tester := NewMemoryTester(t).WithHandleFunc(func(h *MemoryHandler) gin.HandlerFunc {
+		return h.AddMemories
+	})
+
+	req := types.AddMemoriesRequest{
+		Messages: []types.MemoryMessage{{Content: " "}},
+	}
+	tester.WithBody(t, req)
+
+	tester.Execute()
+	tester.ResponseEqCode(t, http.StatusBadRequest)
+}
+
 func TestMemoryHandler_SearchMemories(t *testing.T) {
 	tester := NewMemoryTester(t).WithHandleFunc(func(h *MemoryHandler) gin.HandlerFunc {
 		return h.SearchMemories
@@ -138,6 +177,23 @@ func TestMemoryHandler_SearchMemories(t *testing.T) {
 
 	tester.Execute()
 	tester.ResponseEq(t, http.StatusOK, tester.OKText, resp)
+}
+
+func TestMemoryHandler_SearchMemories_Validation(t *testing.T) {
+	tester := NewMemoryTester(t).WithHandleFunc(func(h *MemoryHandler) gin.HandlerFunc {
+		return h.SearchMemories
+	})
+
+	req := types.SearchMemoriesRequest{
+		ContentQuery:  "query",
+		PageSize:      10,
+		PageNum:       0,
+		MinSimilarity: floatPtr(1.2),
+	}
+	tester.WithBody(t, req)
+
+	tester.Execute()
+	tester.ResponseEqCode(t, http.StatusBadRequest)
 }
 
 func TestMemoryHandler_ListMemories(t *testing.T) {
@@ -163,6 +219,22 @@ func TestMemoryHandler_ListMemories(t *testing.T) {
 	tester.ResponseEq(t, http.StatusOK, tester.OKText, resp)
 }
 
+func TestMemoryHandler_ListMemories_Validation(t *testing.T) {
+	tester := NewMemoryTester(t).WithHandleFunc(func(h *MemoryHandler) gin.HandlerFunc {
+		return h.ListMemories
+	})
+
+	req := types.ListMemoriesRequest{
+		Types:    []types.MemoryType{"invalid"},
+		PageSize: 10,
+		PageNum:  1,
+	}
+	tester.WithBody(t, req)
+
+	tester.Execute()
+	tester.ResponseEqCode(t, http.StatusBadRequest)
+}
+
 func TestMemoryHandler_DeleteMemories(t *testing.T) {
 	tester := NewMemoryTester(t).WithHandleFunc(func(h *MemoryHandler) gin.HandlerFunc {
 		return h.DeleteMemories
@@ -176,6 +248,18 @@ func TestMemoryHandler_DeleteMemories(t *testing.T) {
 	tester.ResponseEq(t, http.StatusOK, tester.OKText, gin.H{"deleted": true})
 }
 
+func TestMemoryHandler_DeleteMemories_Validation(t *testing.T) {
+	tester := NewMemoryTester(t).WithHandleFunc(func(h *MemoryHandler) gin.HandlerFunc {
+		return h.DeleteMemories
+	})
+
+	req := types.DeleteMemoriesRequest{}
+	tester.WithBody(t, req)
+
+	tester.Execute()
+	tester.ResponseEqCode(t, http.StatusBadRequest)
+}
+
 func TestMemoryHandler_Health(t *testing.T) {
 	tester := NewMemoryTester(t).WithHandleFunc(func(h *MemoryHandler) gin.HandlerFunc {
 		return h.Health
@@ -186,4 +270,21 @@ func TestMemoryHandler_Health(t *testing.T) {
 
 	tester.Execute()
 	tester.ResponseEq(t, http.StatusOK, tester.OKText, resp)
+}
+
+func TestMemoryHandler_ErrorMapping(t *testing.T) {
+	tester := NewMemoryTester(t).WithHandleFunc(func(h *MemoryHandler) gin.HandlerFunc {
+		return h.GetProject
+	})
+
+	req := types.GetMemoryProjectRequest{OrgID: "org", ProjectID: "proj"}
+	tester.WithBody(t, req)
+	tester.mocks.memory.On("GetProject", mock.Anything, &req).Return(nil, errorx.ErrRemoteServiceFail)
+
+	tester.Execute()
+	tester.ResponseEqCode(t, http.StatusServiceUnavailable)
+}
+
+func floatPtr(v float64) *float64 {
+	return &v
 }

@@ -72,6 +72,148 @@
 
 ## 接口
 
+### 配置：获取模型
+
+`GET /api/v1/memory/models`
+
+响应 `data`：
+
+```json
+{
+  "chat": {
+    "base_url": "http://localhost/v1:8080",
+    "api_key": "sk-xx",
+    "model": "deepseek-ai/DeepSeek-V3.2"
+  },
+  "embedding": {
+    "base_url": "http://localhost/v1:8080",
+    "api_key": "sk-xx",
+    "model": "Qwen/Qwen3-Embedding-4B",
+    "dimensions": 2560
+  }
+}
+```
+
+`GET /api/v1/memory/models/chat`
+
+响应 `data`：
+
+```json
+{
+  "base_url": "http://localhost/v1:8080",
+  "api_key": "sk-xx",
+  "model": "deepseek-ai/DeepSeek-V3.2"
+}
+```
+
+`GET /api/v1/memory/models/embedding`
+
+响应 `data`：
+
+```json
+{
+  "base_url": "http://localhost/v1:8080",
+  "api_key": "sk-xx",
+  "model": "Qwen/Qwen3-Embedding-4B",
+  "dimensions": 2560
+}
+```
+
+### 配置：设置模型
+
+`POST /api/v1/memory/models`
+
+请求：
+
+```json
+{
+  "chat": {
+    "base_url": "http://localhost/v1:8080",
+    "api_key": "sk-xx",
+    "model": "deepseek-ai/DeepSeek-V3.2"
+  },
+  "embedding": {
+    "base_url": "http://localhost/v1:8080",
+    "api_key": "sk-xx",
+    "model": "Qwen/Qwen3-Embedding-4B",
+    "dimensions": 2560
+  }
+}
+```
+
+说明：可以在一次请求里设置 `chat` 或 `embedding`，也可以同时设置两者。
+
+响应 `data`：
+
+```json
+{
+  "updated": true
+}
+```
+
+`POST /api/v1/memory/models/chat`
+
+请求：
+
+```json
+{
+  "base_url": "http://localhost/v1:8080",
+  "api_key": "sk-xx",
+  "model": "deepseek-ai/DeepSeek-V3.2"
+}
+```
+
+响应 `data`：
+
+```json
+{
+  "updated": true
+}
+```
+
+`POST /api/v1/memory/models/embedding`
+
+请求：
+
+```json
+{
+  "base_url": "http://localhost/v1:8080",
+  "api_key": "sk-xx",
+  "model": "Qwen/Qwen3-Embedding-4B",
+  "dimensions": 2560
+}
+```
+
+响应 `data`：
+
+```json
+{
+  "updated": true
+}
+```
+
+### 配置：删除模型
+
+`DELETE /api/v1/memory/models/chat`
+
+响应 `data`：
+
+```json
+{
+  "deleted": true
+}
+```
+
+`DELETE /api/v1/memory/models/embedding`
+
+响应 `data`：
+
+```json
+{
+  "deleted": true
+}
+```
+
 ### Health
 
 `GET /api/v1/memory/health`

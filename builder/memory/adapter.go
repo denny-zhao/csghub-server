@@ -7,6 +7,14 @@ import (
 )
 
 type Adapter interface {
+	GetModels(ctx context.Context) (*types.GetMemoryModelsResponse, error)
+	GetChatModel(ctx context.Context) (*types.MemoryChatModelConfig, error)
+	GetEmbeddingModel(ctx context.Context) (*types.MemoryEmbeddingModelConfig, error)
+	SetModels(ctx context.Context, req *types.SetMemoryModelsRequest) error
+	SetChatModel(ctx context.Context, req *types.MemoryChatModelConfig) error
+	SetEmbeddingModel(ctx context.Context, req *types.MemoryEmbeddingModelConfig) error
+	DeleteChatModel(ctx context.Context) error
+	DeleteEmbeddingModel(ctx context.Context) error
 	CreateProject(ctx context.Context, req *types.CreateMemoryProjectRequest) (*types.MemoryProjectResponse, error)
 	GetProject(ctx context.Context, req *types.GetMemoryProjectRequest) (*types.MemoryProjectResponse, error)
 	ListProjects(ctx context.Context) ([]*types.MemoryProjectRef, error)

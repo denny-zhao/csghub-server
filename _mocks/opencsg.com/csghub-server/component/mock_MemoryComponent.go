@@ -22,6 +22,58 @@ func (m *MockMemoryComponent) Capabilities() memorytypes.MemoryCapabilities {
 	return memorytypes.MemoryCapabilities{}
 }
 
+func (m *MockMemoryComponent) GetModels(ctx context.Context) (*memorytypes.GetMemoryModelsResponse, error) {
+	ret := m.Called(ctx)
+	var r0 *memorytypes.GetMemoryModelsResponse
+	if ret.Get(0) != nil {
+		r0 = ret.Get(0).(*memorytypes.GetMemoryModelsResponse)
+	}
+	return r0, ret.Error(1)
+}
+
+func (m *MockMemoryComponent) GetChatModel(ctx context.Context) (*memorytypes.MemoryChatModelConfig, error) {
+	ret := m.Called(ctx)
+	var r0 *memorytypes.MemoryChatModelConfig
+	if ret.Get(0) != nil {
+		r0 = ret.Get(0).(*memorytypes.MemoryChatModelConfig)
+	}
+	return r0, ret.Error(1)
+}
+
+func (m *MockMemoryComponent) GetEmbeddingModel(ctx context.Context) (*memorytypes.MemoryEmbeddingModelConfig, error) {
+	ret := m.Called(ctx)
+	var r0 *memorytypes.MemoryEmbeddingModelConfig
+	if ret.Get(0) != nil {
+		r0 = ret.Get(0).(*memorytypes.MemoryEmbeddingModelConfig)
+	}
+	return r0, ret.Error(1)
+}
+
+func (m *MockMemoryComponent) SetModels(ctx context.Context, req *memorytypes.SetMemoryModelsRequest) error {
+	ret := m.Called(ctx, req)
+	return ret.Error(0)
+}
+
+func (m *MockMemoryComponent) SetChatModel(ctx context.Context, req *memorytypes.MemoryChatModelConfig) error {
+	ret := m.Called(ctx, req)
+	return ret.Error(0)
+}
+
+func (m *MockMemoryComponent) SetEmbeddingModel(ctx context.Context, req *memorytypes.MemoryEmbeddingModelConfig) error {
+	ret := m.Called(ctx, req)
+	return ret.Error(0)
+}
+
+func (m *MockMemoryComponent) DeleteChatModel(ctx context.Context) error {
+	ret := m.Called(ctx)
+	return ret.Error(0)
+}
+
+func (m *MockMemoryComponent) DeleteEmbeddingModel(ctx context.Context) error {
+	ret := m.Called(ctx)
+	return ret.Error(0)
+}
+
 func (m *MockMemoryComponent) CreateProject(ctx context.Context, req *memorytypes.CreateMemoryProjectRequest) (*memorytypes.MemoryProjectResponse, error) {
 	ret := m.Called(ctx, req)
 	var r0 *memorytypes.MemoryProjectResponse

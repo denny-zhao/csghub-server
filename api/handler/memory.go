@@ -40,6 +40,106 @@ func (h *MemoryHandler) CreateProject(ctx *gin.Context) {
 	httpbase.OK(ctx, filterProjectResponse(resp))
 }
 
+func (h *MemoryHandler) GetModels(ctx *gin.Context) {
+	resp, err := h.memory.GetModels(ctx.Request.Context())
+	if err != nil {
+		slog.ErrorContext(ctx.Request.Context(), "failed to get memory models", slog.Any("error", err))
+		h.respondMemoryError(ctx, err)
+		return
+	}
+	httpbase.OK(ctx, filterMemoryModelsResponse(resp))
+}
+
+func (h *MemoryHandler) GetChatModel(ctx *gin.Context) {
+	resp, err := h.memory.GetChatModel(ctx.Request.Context())
+	if err != nil {
+		slog.ErrorContext(ctx.Request.Context(), "failed to get memory chat model", slog.Any("error", err))
+		h.respondMemoryError(ctx, err)
+		return
+	}
+	httpbase.OK(ctx, filterMemoryChatModel(resp))
+}
+
+func (h *MemoryHandler) GetEmbeddingModel(ctx *gin.Context) {
+	resp, err := h.memory.GetEmbeddingModel(ctx.Request.Context())
+	if err != nil {
+		slog.ErrorContext(ctx.Request.Context(), "failed to get memory embedding model", slog.Any("error", err))
+		h.respondMemoryError(ctx, err)
+		return
+	}
+	httpbase.OK(ctx, filterMemoryEmbeddingModel(resp))
+}
+
+func (h *MemoryHandler) SetModels(ctx *gin.Context) {
+	var req types.SetMemoryModelsRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		slog.ErrorContext(ctx.Request.Context(), "bad request format", "error", err)
+		httpbase.BadRequestWithExt(ctx, errorx.ReqBodyFormat(err, nil))
+		return
+	}
+	if req.Chat == nil && req.Embedding == nil {
+		httpbase.BadRequestWithExt(ctx, errorx.ReqParamInvalid(
+			fmt.Errorf("chat or embedding is required"),
+			errorx.Ctx().Set("field", "chat,embedding"),
+		))
+		return
+	}
+	if err := h.memory.SetModels(ctx.Request.Context(), &req); err != nil {
+		slog.ErrorContext(ctx.Request.Context(), "failed to set memory models", slog.Any("error", err))
+		h.respondMemoryError(ctx, err)
+		return
+	}
+	httpbase.OK(ctx, &types.MemoryModelUpdateResponse{Updated: true})
+}
+
+func (h *MemoryHandler) SetChatModel(ctx *gin.Context) {
+	var req types.MemoryChatModelConfig
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		slog.ErrorContext(ctx.Request.Context(), "bad request format", "error", err)
+		httpbase.BadRequestWithExt(ctx, errorx.ReqBodyFormat(err, nil))
+		return
+	}
+	if err := h.memory.SetChatModel(ctx.Request.Context(), &req); err != nil {
+		slog.ErrorContext(ctx.Request.Context(), "failed to set memory chat model", slog.Any("error", err))
+		h.respondMemoryError(ctx, err)
+		return
+	}
+	httpbase.OK(ctx, &types.MemoryModelUpdateResponse{Updated: true})
+}
+
+func (h *MemoryHandler) SetEmbeddingModel(ctx *gin.Context) {
+	var req types.MemoryEmbeddingModelConfig
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		slog.ErrorContext(ctx.Request.Context(), "bad request format", "error", err)
+		httpbase.BadRequestWithExt(ctx, errorx.ReqBodyFormat(err, nil))
+		return
+	}
+	if err := h.memory.SetEmbeddingModel(ctx.Request.Context(), &req); err != nil {
+		slog.ErrorContext(ctx.Request.Context(), "failed to set memory embedding model", slog.Any("error", err))
+		h.respondMemoryError(ctx, err)
+		return
+	}
+	httpbase.OK(ctx, &types.MemoryModelUpdateResponse{Updated: true})
+}
+
+func (h *MemoryHandler) DeleteChatModel(ctx *gin.Context) {
+	if err := h.memory.DeleteChatModel(ctx.Request.Context()); err != nil {
+		slog.ErrorContext(ctx.Request.Context(), "failed to delete memory chat model", slog.Any("error", err))
+		h.respondMemoryError(ctx, err)
+		return
+	}
+	httpbase.OK(ctx, &types.MemoryModelDeleteResponse{Deleted: true})
+}
+
+func (h *MemoryHandler) DeleteEmbeddingModel(ctx *gin.Context) {
+	if err := h.memory.DeleteEmbeddingModel(ctx.Request.Context()); err != nil {
+		slog.ErrorContext(ctx.Request.Context(), "failed to delete memory embedding model", slog.Any("error", err))
+		h.respondMemoryError(ctx, err)
+		return
+	}
+	httpbase.OK(ctx, &types.MemoryModelDeleteResponse{Deleted: true})
+}
+
 func (h *MemoryHandler) GetProject(ctx *gin.Context) {
 	var req types.GetMemoryProjectRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -135,6 +235,39 @@ func filterProjectResponse(resp *types.MemoryProjectResponse) *types.MemoryProje
 		OrgID:       resp.OrgID,
 		ProjectID:   resp.ProjectID,
 		Description: resp.Description,
+	}
+}
+
+func filterMemoryModelsResponse(resp *types.GetMemoryModelsResponse) *types.GetMemoryModelsResponse {
+	if resp == nil {
+		return nil
+	}
+	return &types.GetMemoryModelsResponse{
+		Chat:      filterMemoryChatModel(resp.Chat),
+		Embedding: filterMemoryEmbeddingModel(resp.Embedding),
+	}
+}
+
+func filterMemoryChatModel(cfg *types.MemoryChatModelConfig) *types.MemoryChatModelConfig {
+	if cfg == nil {
+		return nil
+	}
+	return &types.MemoryChatModelConfig{
+		BaseURL: cfg.BaseURL,
+		APIKey:  cfg.APIKey,
+		Model:   cfg.Model,
+	}
+}
+
+func filterMemoryEmbeddingModel(cfg *types.MemoryEmbeddingModelConfig) *types.MemoryEmbeddingModelConfig {
+	if cfg == nil {
+		return nil
+	}
+	return &types.MemoryEmbeddingModelConfig{
+		BaseURL:    cfg.BaseURL,
+		APIKey:     cfg.APIKey,
+		Model:      cfg.Model,
+		Dimensions: cfg.Dimensions,
 	}
 }
 

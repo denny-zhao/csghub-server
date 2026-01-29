@@ -36,6 +36,120 @@ func (t *MemoryTester) WithHandleFunc(fn func(h *MemoryHandler) gin.HandlerFunc)
 	return t
 }
 
+func TestMemoryHandler_GetModels(t *testing.T) {
+	tester := NewMemoryTester(t).WithHandleFunc(func(h *MemoryHandler) gin.HandlerFunc {
+		return h.GetModels
+	})
+
+	resp := &types.GetMemoryModelsResponse{
+		Chat:      &types.MemoryChatModelConfig{BaseURL: "http://chat", APIKey: "k", Model: "m"},
+		Embedding: &types.MemoryEmbeddingModelConfig{BaseURL: "http://embed", APIKey: "k", Model: "e", Dimensions: 256},
+	}
+	tester.mocks.memory.On("GetModels", mock.Anything).Return(resp, nil)
+
+	tester.Execute()
+	tester.ResponseEq(t, http.StatusOK, tester.OKText, resp)
+}
+
+func TestMemoryHandler_GetChatModel(t *testing.T) {
+	tester := NewMemoryTester(t).WithHandleFunc(func(h *MemoryHandler) gin.HandlerFunc {
+		return h.GetChatModel
+	})
+
+	resp := &types.MemoryChatModelConfig{BaseURL: "http://chat", APIKey: "k", Model: "m"}
+	tester.mocks.memory.On("GetChatModel", mock.Anything).Return(resp, nil)
+
+	tester.Execute()
+	tester.ResponseEq(t, http.StatusOK, tester.OKText, resp)
+}
+
+func TestMemoryHandler_GetEmbeddingModel(t *testing.T) {
+	tester := NewMemoryTester(t).WithHandleFunc(func(h *MemoryHandler) gin.HandlerFunc {
+		return h.GetEmbeddingModel
+	})
+
+	resp := &types.MemoryEmbeddingModelConfig{BaseURL: "http://embed", APIKey: "k", Model: "e", Dimensions: 256}
+	tester.mocks.memory.On("GetEmbeddingModel", mock.Anything).Return(resp, nil)
+
+	tester.Execute()
+	tester.ResponseEq(t, http.StatusOK, tester.OKText, resp)
+}
+
+func TestMemoryHandler_SetModels(t *testing.T) {
+	tester := NewMemoryTester(t).WithHandleFunc(func(h *MemoryHandler) gin.HandlerFunc {
+		return h.SetModels
+	})
+
+	req := types.SetMemoryModelsRequest{
+		Chat: &types.MemoryChatModelConfig{BaseURL: "http://chat", APIKey: "k", Model: "m"},
+	}
+	tester.WithBody(t, req)
+	tester.mocks.memory.On("SetModels", mock.Anything, &req).Return(nil)
+
+	tester.Execute()
+	tester.ResponseEq(t, http.StatusOK, tester.OKText, &types.MemoryModelUpdateResponse{Updated: true})
+}
+
+func TestMemoryHandler_SetModels_Validation(t *testing.T) {
+	tester := NewMemoryTester(t).WithHandleFunc(func(h *MemoryHandler) gin.HandlerFunc {
+		return h.SetModels
+	})
+
+	req := types.SetMemoryModelsRequest{}
+	tester.WithBody(t, req)
+
+	tester.Execute()
+	tester.ResponseEqCode(t, http.StatusBadRequest)
+}
+
+func TestMemoryHandler_SetChatModel(t *testing.T) {
+	tester := NewMemoryTester(t).WithHandleFunc(func(h *MemoryHandler) gin.HandlerFunc {
+		return h.SetChatModel
+	})
+
+	req := types.MemoryChatModelConfig{BaseURL: "http://chat", APIKey: "k", Model: "m"}
+	tester.WithBody(t, req)
+	tester.mocks.memory.On("SetChatModel", mock.Anything, &req).Return(nil)
+
+	tester.Execute()
+	tester.ResponseEq(t, http.StatusOK, tester.OKText, &types.MemoryModelUpdateResponse{Updated: true})
+}
+
+func TestMemoryHandler_SetEmbeddingModel(t *testing.T) {
+	tester := NewMemoryTester(t).WithHandleFunc(func(h *MemoryHandler) gin.HandlerFunc {
+		return h.SetEmbeddingModel
+	})
+
+	req := types.MemoryEmbeddingModelConfig{BaseURL: "http://embed", APIKey: "k", Model: "e", Dimensions: 256}
+	tester.WithBody(t, req)
+	tester.mocks.memory.On("SetEmbeddingModel", mock.Anything, &req).Return(nil)
+
+	tester.Execute()
+	tester.ResponseEq(t, http.StatusOK, tester.OKText, &types.MemoryModelUpdateResponse{Updated: true})
+}
+
+func TestMemoryHandler_DeleteChatModel(t *testing.T) {
+	tester := NewMemoryTester(t).WithHandleFunc(func(h *MemoryHandler) gin.HandlerFunc {
+		return h.DeleteChatModel
+	})
+
+	tester.mocks.memory.On("DeleteChatModel", mock.Anything).Return(nil)
+
+	tester.Execute()
+	tester.ResponseEq(t, http.StatusOK, tester.OKText, &types.MemoryModelDeleteResponse{Deleted: true})
+}
+
+func TestMemoryHandler_DeleteEmbeddingModel(t *testing.T) {
+	tester := NewMemoryTester(t).WithHandleFunc(func(h *MemoryHandler) gin.HandlerFunc {
+		return h.DeleteEmbeddingModel
+	})
+
+	tester.mocks.memory.On("DeleteEmbeddingModel", mock.Anything).Return(nil)
+
+	tester.Execute()
+	tester.ResponseEq(t, http.StatusOK, tester.OKText, &types.MemoryModelDeleteResponse{Deleted: true})
+}
+
 func TestMemoryHandler_CreateProject(t *testing.T) {
 	tester := NewMemoryTester(t).WithHandleFunc(func(h *MemoryHandler) gin.HandlerFunc {
 		return h.CreateProject

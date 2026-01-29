@@ -72,6 +72,148 @@ Allowed values: `"episodic"`, `"semantic"`.
 
 ## Endpoints
 
+### Config: Get models
+
+`GET /api/v1/memory/models`
+
+Response `data`:
+
+```json
+{
+  "chat": {
+    "base_url": "http://localhost/v1:8080",
+    "api_key": "sk-xx",
+    "model": "deepseek-ai/DeepSeek-V3.2"
+  },
+  "embedding": {
+    "base_url": "http://localhost/v1:8080",
+    "api_key": "sk-xx",
+    "model": "Qwen/Qwen3-Embedding-4B",
+    "dimensions": 2560
+  }
+}
+```
+
+`GET /api/v1/memory/models/chat`
+
+Response `data`:
+
+```json
+{
+  "base_url": "http://localhost/v1:8080",
+  "api_key": "sk-xx",
+  "model": "deepseek-ai/DeepSeek-V3.2"
+}
+```
+
+`GET /api/v1/memory/models/embedding`
+
+Response `data`:
+
+```json
+{
+  "base_url": "http://localhost/v1:8080",
+  "api_key": "sk-xx",
+  "model": "Qwen/Qwen3-Embedding-4B",
+  "dimensions": 2560
+}
+```
+
+### Config: Set models
+
+`POST /api/v1/memory/models`
+
+Request:
+
+```json
+{
+  "chat": {
+    "base_url": "http://localhost/v1:8080",
+    "api_key": "sk-xx",
+    "model": "deepseek-ai/DeepSeek-V3.2"
+  },
+  "embedding": {
+    "base_url": "http://localhost/v1:8080",
+    "api_key": "sk-xx",
+    "model": "Qwen/Qwen3-Embedding-4B",
+    "dimensions": 2560
+  }
+}
+```
+
+Note: set models can set either `chat` or `embedding` or both in one request.
+
+Response `data`:
+
+```json
+{
+  "updated": true
+}
+```
+
+`POST /api/v1/memory/models/chat`
+
+Request:
+
+```json
+{
+  "base_url": "http://localhost/v1:8080",
+  "api_key": "sk-xx",
+  "model": "deepseek-ai/DeepSeek-V3.2"
+}
+```
+
+Response `data`:
+
+```json
+{
+  "updated": true
+}
+```
+
+`POST /api/v1/memory/models/embedding`
+
+Request:
+
+```json
+{
+  "base_url": "http://localhost/v1:8080",
+  "api_key": "sk-xx",
+  "model": "Qwen/Qwen3-Embedding-4B",
+  "dimensions": 2560
+}
+```
+
+Response `data`:
+
+```json
+{
+  "updated": true
+}
+```
+
+### Config: Delete model
+
+`DELETE /api/v1/memory/models/chat`
+
+Response `data`:
+
+```json
+{
+  "deleted": true
+}
+```
+
+`DELETE /api/v1/memory/models/embedding`
+
+Response `data`:
+
+```json
+{
+  "deleted": true
+}
+```
+
 ### Health
 
 `GET /api/v1/memory/health`

@@ -24,6 +24,18 @@ type Client struct {
 	logger   *slog.Logger
 }
 
+type memmachineResourceInfo struct {
+	Name     string `json:"name"`
+	Provider string `json:"provider"`
+	Status   string `json:"status"`
+	Error    string `json:"error,omitempty"`
+}
+
+type memmachineResourcesStatus struct {
+	Embedders      []memmachineResourceInfo `json:"embedders"`
+	LanguageModels []memmachineResourceInfo `json:"language_models"`
+}
+
 func NewClient(endpoint, basePath string, opts ...rpc.RequestOption) *Client {
 	client := &Client{
 		hc:       rpc.NewHttpClient(endpoint, opts...),
@@ -223,6 +235,75 @@ func (c *Client) Health(ctx context.Context) (*types.MemoryHealthResponse, error
 		return nil, errorx.RemoteSvcFail(err, errorx.Ctx().Set("service", "memory service").Set("action", "health check"))
 	}
 	return &resp, nil
+}
+
+func (c *Client) GetModels(ctx context.Context) (*types.GetMemoryModelsResponse, error) {
+	resources, err := c.getResources(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &types.GetMemoryModelsResponse{
+		Chat:      selectChatModel(resources),
+		Embedding: selectEmbeddingModel(resources),
+	}, nil
+}
+
+func (c *Client) GetChatModel(ctx context.Context) (*types.MemoryChatModelConfig, error) {
+	resources, err := c.getResources(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return selectChatModel(resources), nil
+}
+
+func (c *Client) GetEmbeddingModel(ctx context.Context) (*types.MemoryEmbeddingModelConfig, error) {
+	resources, err := c.getResources(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return selectEmbeddingModel(resources), nil
+}
+
+func (c *Client) getResources(ctx context.Context) (*memmachineResourcesStatus, error) {
+	var resp memmachineResourcesStatus
+	err := c.get(ctx, "/config/resources", &resp, http.StatusOK)
+	if err != nil {
+		return nil, errorx.RemoteSvcFail(err, errorx.Ctx().Set("service", "memory service").Set("action", "get config resources"))
+	}
+	return &resp, nil
+}
+
+func selectChatModel(resources *memmachineResourcesStatus) *types.MemoryChatModelConfig {
+	if resources == nil {
+		return nil
+	}
+	for _, model := range resources.LanguageModels {
+		if model.Provider == "openai-chat-completions" || model.Provider == "openai-responses" || model.Provider == "openai" {
+			return &types.MemoryChatModelConfig{
+				BaseURL: "",
+				APIKey:  "",
+				Model:   model.Name,
+			}
+		}
+	}
+	return nil
+}
+
+func selectEmbeddingModel(resources *memmachineResourcesStatus) *types.MemoryEmbeddingModelConfig {
+	if resources == nil {
+		return nil
+	}
+	for _, embedder := range resources.Embedders {
+		if embedder.Provider == "openai" {
+			return &types.MemoryEmbeddingModelConfig{
+				BaseURL:    "",
+				APIKey:     "",
+				Model:      embedder.Name,
+				Dimensions: 0,
+			}
+		}
+	}
+	return nil
 }
 
 func (c *Client) post(ctx context.Context, path string, req any, out any, okCodes ...int) error {

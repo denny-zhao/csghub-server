@@ -14,6 +14,37 @@ type MemoryCapabilities struct {
 	SupportsHealthCheck bool `json:"supports_health_check"`
 }
 
+type MemoryChatModelConfig struct {
+	BaseURL string `json:"base_url" binding:"required"`
+	APIKey  string `json:"api_key" binding:"required"`
+	Model   string `json:"model" binding:"required"`
+}
+
+type MemoryEmbeddingModelConfig struct {
+	BaseURL    string `json:"base_url" binding:"required"`
+	APIKey     string `json:"api_key" binding:"required"`
+	Model      string `json:"model" binding:"required"`
+	Dimensions int    `json:"dimensions" binding:"required,gt=0"`
+}
+
+type GetMemoryModelsResponse struct {
+	Chat      *MemoryChatModelConfig      `json:"chat,omitempty"`
+	Embedding *MemoryEmbeddingModelConfig `json:"embedding,omitempty"`
+}
+
+type SetMemoryModelsRequest struct {
+	Chat      *MemoryChatModelConfig      `json:"chat,omitempty"`
+	Embedding *MemoryEmbeddingModelConfig `json:"embedding,omitempty"`
+}
+
+type MemoryModelUpdateResponse struct {
+	Updated bool `json:"updated"`
+}
+
+type MemoryModelDeleteResponse struct {
+	Deleted bool `json:"deleted"`
+}
+
 type CreateMemoryProjectRequest struct {
 	OrgID       string `json:"org_id" binding:"required"`
 	ProjectID   string `json:"project_id" binding:"required"`

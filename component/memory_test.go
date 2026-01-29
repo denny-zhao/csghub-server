@@ -14,6 +14,58 @@ type mockMemoryAdapter struct {
 	mock.Mock
 }
 
+func (m *mockMemoryAdapter) GetModels(ctx context.Context) (*types.GetMemoryModelsResponse, error) {
+	ret := m.Called(ctx)
+	var r0 *types.GetMemoryModelsResponse
+	if ret.Get(0) != nil {
+		r0 = ret.Get(0).(*types.GetMemoryModelsResponse)
+	}
+	return r0, ret.Error(1)
+}
+
+func (m *mockMemoryAdapter) GetChatModel(ctx context.Context) (*types.MemoryChatModelConfig, error) {
+	ret := m.Called(ctx)
+	var r0 *types.MemoryChatModelConfig
+	if ret.Get(0) != nil {
+		r0 = ret.Get(0).(*types.MemoryChatModelConfig)
+	}
+	return r0, ret.Error(1)
+}
+
+func (m *mockMemoryAdapter) GetEmbeddingModel(ctx context.Context) (*types.MemoryEmbeddingModelConfig, error) {
+	ret := m.Called(ctx)
+	var r0 *types.MemoryEmbeddingModelConfig
+	if ret.Get(0) != nil {
+		r0 = ret.Get(0).(*types.MemoryEmbeddingModelConfig)
+	}
+	return r0, ret.Error(1)
+}
+
+func (m *mockMemoryAdapter) SetModels(ctx context.Context, req *types.SetMemoryModelsRequest) error {
+	ret := m.Called(ctx, req)
+	return ret.Error(0)
+}
+
+func (m *mockMemoryAdapter) SetChatModel(ctx context.Context, req *types.MemoryChatModelConfig) error {
+	ret := m.Called(ctx, req)
+	return ret.Error(0)
+}
+
+func (m *mockMemoryAdapter) SetEmbeddingModel(ctx context.Context, req *types.MemoryEmbeddingModelConfig) error {
+	ret := m.Called(ctx, req)
+	return ret.Error(0)
+}
+
+func (m *mockMemoryAdapter) DeleteChatModel(ctx context.Context) error {
+	ret := m.Called(ctx)
+	return ret.Error(0)
+}
+
+func (m *mockMemoryAdapter) DeleteEmbeddingModel(ctx context.Context) error {
+	ret := m.Called(ctx)
+	return ret.Error(0)
+}
+
 func (m *mockMemoryAdapter) CreateProject(ctx context.Context, req *types.CreateMemoryProjectRequest) (*types.MemoryProjectResponse, error) {
 	ret := m.Called(ctx, req)
 	var r0 *types.MemoryProjectResponse
@@ -88,6 +140,101 @@ func (m *mockMemoryAdapter) Health(ctx context.Context) (*types.MemoryHealthResp
 }
 
 var _ memory.Adapter = (*mockMemoryAdapter)(nil)
+
+func TestMemoryComponent_GetModels(t *testing.T) {
+	client := &mockMemoryAdapter{}
+	component := newMemoryComponent(client)
+
+	resp := &types.GetMemoryModelsResponse{
+		Chat:      &types.MemoryChatModelConfig{BaseURL: "http://chat", APIKey: "k", Model: "m"},
+		Embedding: &types.MemoryEmbeddingModelConfig{BaseURL: "http://embed", APIKey: "k", Model: "e", Dimensions: 256},
+	}
+	client.On("GetModels", mock.Anything).Return(resp, nil)
+
+	got, err := component.GetModels(context.Background())
+	assert.NoError(t, err)
+	assert.Equal(t, resp, got)
+}
+
+func TestMemoryComponent_GetChatModel(t *testing.T) {
+	client := &mockMemoryAdapter{}
+	component := newMemoryComponent(client)
+
+	resp := &types.MemoryChatModelConfig{BaseURL: "http://chat", APIKey: "k", Model: "m"}
+	client.On("GetChatModel", mock.Anything).Return(resp, nil)
+
+	got, err := component.GetChatModel(context.Background())
+	assert.NoError(t, err)
+	assert.Equal(t, resp, got)
+}
+
+func TestMemoryComponent_GetEmbeddingModel(t *testing.T) {
+	client := &mockMemoryAdapter{}
+	component := newMemoryComponent(client)
+
+	resp := &types.MemoryEmbeddingModelConfig{BaseURL: "http://embed", APIKey: "k", Model: "e", Dimensions: 256}
+	client.On("GetEmbeddingModel", mock.Anything).Return(resp, nil)
+
+	got, err := component.GetEmbeddingModel(context.Background())
+	assert.NoError(t, err)
+	assert.Equal(t, resp, got)
+}
+
+func TestMemoryComponent_SetModels(t *testing.T) {
+	client := &mockMemoryAdapter{}
+	component := newMemoryComponent(client)
+
+	req := &types.SetMemoryModelsRequest{
+		Chat:      &types.MemoryChatModelConfig{BaseURL: "http://chat", APIKey: "k", Model: "m"},
+		Embedding: &types.MemoryEmbeddingModelConfig{BaseURL: "http://embed", APIKey: "k", Model: "e", Dimensions: 256},
+	}
+	client.On("SetModels", mock.Anything, req).Return(nil)
+
+	err := component.SetModels(context.Background(), req)
+	assert.NoError(t, err)
+}
+
+func TestMemoryComponent_SetChatModel(t *testing.T) {
+	client := &mockMemoryAdapter{}
+	component := newMemoryComponent(client)
+
+	req := &types.MemoryChatModelConfig{BaseURL: "http://chat", APIKey: "k", Model: "m"}
+	client.On("SetChatModel", mock.Anything, req).Return(nil)
+
+	err := component.SetChatModel(context.Background(), req)
+	assert.NoError(t, err)
+}
+
+func TestMemoryComponent_SetEmbeddingModel(t *testing.T) {
+	client := &mockMemoryAdapter{}
+	component := newMemoryComponent(client)
+
+	req := &types.MemoryEmbeddingModelConfig{BaseURL: "http://embed", APIKey: "k", Model: "e", Dimensions: 256}
+	client.On("SetEmbeddingModel", mock.Anything, req).Return(nil)
+
+	err := component.SetEmbeddingModel(context.Background(), req)
+	assert.NoError(t, err)
+}
+
+func TestMemoryComponent_DeleteChatModel(t *testing.T) {
+	client := &mockMemoryAdapter{}
+	component := newMemoryComponent(client)
+
+	client.On("DeleteChatModel", mock.Anything).Return(nil)
+
+	err := component.DeleteChatModel(context.Background())
+	assert.NoError(t, err)
+}
+
+func TestMemoryComponent_DeleteEmbeddingModel(t *testing.T) {
+	client := &mockMemoryAdapter{}
+	component := newMemoryComponent(client)
+
+	client.On("DeleteEmbeddingModel", mock.Anything).Return(nil)
+
+	err := component.DeleteEmbeddingModel(context.Background())
+	assert.NoError(t, err)
+}
 
 func TestMemoryComponent_CreateProject(t *testing.T) {
 	client := &mockMemoryAdapter{}

@@ -35,6 +35,38 @@ func (a *Adapter) WithDelay(delay time.Duration) {
 	a.client.WithDelay(delay)
 }
 
+func (a *Adapter) GetModels(ctx context.Context) (*types.GetMemoryModelsResponse, error) {
+	return a.client.GetModels(ctx)
+}
+
+func (a *Adapter) GetChatModel(ctx context.Context) (*types.MemoryChatModelConfig, error) {
+	return a.client.GetChatModel(ctx)
+}
+
+func (a *Adapter) GetEmbeddingModel(ctx context.Context) (*types.MemoryEmbeddingModelConfig, error) {
+	return a.client.GetEmbeddingModel(ctx)
+}
+
+func (a *Adapter) SetModels(ctx context.Context, req *types.SetMemoryModelsRequest) error {
+	return fmt.Errorf("memory model configuration is not implemented for memmachine")
+}
+
+func (a *Adapter) SetChatModel(ctx context.Context, req *types.MemoryChatModelConfig) error {
+	return fmt.Errorf("memory chat model configuration is not implemented for memmachine")
+}
+
+func (a *Adapter) SetEmbeddingModel(ctx context.Context, req *types.MemoryEmbeddingModelConfig) error {
+	return fmt.Errorf("memory embedding model configuration is not implemented for memmachine")
+}
+
+func (a *Adapter) DeleteChatModel(ctx context.Context) error {
+	return fmt.Errorf("memory chat model configuration is not implemented for memmachine")
+}
+
+func (a *Adapter) DeleteEmbeddingModel(ctx context.Context) error {
+	return fmt.Errorf("memory embedding model configuration is not implemented for memmachine")
+}
+
 func (a *Adapter) CreateProject(ctx context.Context, req *types.CreateMemoryProjectRequest) (*types.MemoryProjectResponse, error) {
 	return a.client.CreateProject(ctx, req)
 }

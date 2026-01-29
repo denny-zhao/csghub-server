@@ -235,6 +235,72 @@ func TestClient_Health(t *testing.T) {
 	assert.Equal(t, "healthy", resp.Status)
 }
 
+func TestClient_GetModels(t *testing.T) {
+	server := newTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method)
+		assert.Equal(t, "/api/v2/config/resources", r.URL.Path)
+		_ = json.NewEncoder(w).Encode(memmachineResourcesStatus{
+			Embedders: []memmachineResourceInfo{
+				{Name: "openai_embedder", Provider: "openai", Status: "ready"},
+			},
+			LanguageModels: []memmachineResourceInfo{
+				{Name: "openai_chat", Provider: "openai-chat-completions", Status: "ready"},
+			},
+		})
+	}))
+	defer server.Close()
+
+	client := NewClient(server.URL, "/api/v2")
+	resp, err := client.GetModels(context.Background())
+	assert.NoError(t, err)
+	if assert.NotNil(t, resp.Chat) {
+		assert.Equal(t, "openai_chat", resp.Chat.Model)
+	}
+	if assert.NotNil(t, resp.Embedding) {
+		assert.Equal(t, "openai_embedder", resp.Embedding.Model)
+	}
+}
+
+func TestClient_GetChatModel(t *testing.T) {
+	server := newTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method)
+		assert.Equal(t, "/api/v2/config/resources", r.URL.Path)
+		_ = json.NewEncoder(w).Encode(memmachineResourcesStatus{
+			LanguageModels: []memmachineResourceInfo{
+				{Name: "openai_resp", Provider: "openai-responses", Status: "ready"},
+			},
+		})
+	}))
+	defer server.Close()
+
+	client := NewClient(server.URL, "/api/v2")
+	resp, err := client.GetChatModel(context.Background())
+	assert.NoError(t, err)
+	if assert.NotNil(t, resp) {
+		assert.Equal(t, "openai_resp", resp.Model)
+	}
+}
+
+func TestClient_GetEmbeddingModel(t *testing.T) {
+	server := newTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method)
+		assert.Equal(t, "/api/v2/config/resources", r.URL.Path)
+		_ = json.NewEncoder(w).Encode(memmachineResourcesStatus{
+			Embedders: []memmachineResourceInfo{
+				{Name: "embedder_one", Provider: "openai", Status: "ready"},
+			},
+		})
+	}))
+	defer server.Close()
+
+	client := NewClient(server.URL, "/api/v2")
+	resp, err := client.GetEmbeddingModel(context.Background())
+	assert.NoError(t, err)
+	if assert.NotNil(t, resp) {
+		assert.Equal(t, "embedder_one", resp.Model)
+	}
+}
+
 func newTestServer(t *testing.T, handler http.Handler) *httptest.Server {
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {

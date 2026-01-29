@@ -14,6 +14,14 @@ import (
 
 type MemoryComponent interface {
 	Capabilities() types.MemoryCapabilities
+	GetModels(ctx context.Context) (*types.GetMemoryModelsResponse, error)
+	GetChatModel(ctx context.Context) (*types.MemoryChatModelConfig, error)
+	GetEmbeddingModel(ctx context.Context) (*types.MemoryEmbeddingModelConfig, error)
+	SetModels(ctx context.Context, req *types.SetMemoryModelsRequest) error
+	SetChatModel(ctx context.Context, req *types.MemoryChatModelConfig) error
+	SetEmbeddingModel(ctx context.Context, req *types.MemoryEmbeddingModelConfig) error
+	DeleteChatModel(ctx context.Context) error
+	DeleteEmbeddingModel(ctx context.Context) error
 	CreateProject(ctx context.Context, req *types.CreateMemoryProjectRequest) (*types.MemoryProjectResponse, error)
 	GetProject(ctx context.Context, req *types.GetMemoryProjectRequest) (*types.MemoryProjectResponse, error)
 	ListProjects(ctx context.Context) ([]*types.MemoryProjectRef, error)
@@ -80,6 +88,38 @@ func newMemoryComponent(client memory.Adapter) *memoryComponentImpl {
 
 func (c *memoryComponentImpl) Capabilities() types.MemoryCapabilities {
 	return c.capabilities
+}
+
+func (c *memoryComponentImpl) GetModels(ctx context.Context) (*types.GetMemoryModelsResponse, error) {
+	return c.client.GetModels(ctx)
+}
+
+func (c *memoryComponentImpl) GetChatModel(ctx context.Context) (*types.MemoryChatModelConfig, error) {
+	return c.client.GetChatModel(ctx)
+}
+
+func (c *memoryComponentImpl) GetEmbeddingModel(ctx context.Context) (*types.MemoryEmbeddingModelConfig, error) {
+	return c.client.GetEmbeddingModel(ctx)
+}
+
+func (c *memoryComponentImpl) SetModels(ctx context.Context, req *types.SetMemoryModelsRequest) error {
+	return c.client.SetModels(ctx, req)
+}
+
+func (c *memoryComponentImpl) SetChatModel(ctx context.Context, req *types.MemoryChatModelConfig) error {
+	return c.client.SetChatModel(ctx, req)
+}
+
+func (c *memoryComponentImpl) SetEmbeddingModel(ctx context.Context, req *types.MemoryEmbeddingModelConfig) error {
+	return c.client.SetEmbeddingModel(ctx, req)
+}
+
+func (c *memoryComponentImpl) DeleteChatModel(ctx context.Context) error {
+	return c.client.DeleteChatModel(ctx)
+}
+
+func (c *memoryComponentImpl) DeleteEmbeddingModel(ctx context.Context) error {
+	return c.client.DeleteEmbeddingModel(ctx)
 }
 
 func (c *memoryComponentImpl) CreateProject(ctx context.Context, req *types.CreateMemoryProjectRequest) (*types.MemoryProjectResponse, error) {
